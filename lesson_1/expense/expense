@@ -5,7 +5,10 @@ require "pg"
 COLUMN_DATA_WIDTH = 11
 COLUMN = "|"
 
-def display_all_expenses(db)
+def display_all_expenses
+  # Connect to the database and get an object representing that
+  db = PG.connect(dbname: "expense")
+
   all_expenses = db.exec "SELECT * FROM expenses ORDER BY created_on ASC;"
 
   all_expenses.each do |expense|
@@ -34,11 +37,8 @@ def display_help
   puts help
 end
 
-# Connect to the database and get an object representing that
-db = PG.connect(dbname: "expense")
-
 case ARGV[0]
-when "list" then display_all_expenses(db)
+when "list" then display_all_expenses
 else display_help
 end
 
