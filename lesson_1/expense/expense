@@ -37,7 +37,7 @@ def display_help
   puts help
 end
 
-case ARGV[0]
+case ARGV.first
 when "list" then display_all_expenses
 else display_help
 end
