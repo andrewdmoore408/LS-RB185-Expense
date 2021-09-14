@@ -5,16 +5,41 @@ require "pg"
 COLUMN_DATA_WIDTH = 11
 COLUMN = "|"
 
+def display_all_expenses(db)
+  all_expenses = db.exec "SELECT * FROM expenses ORDER BY created_on ASC;"
+
+  all_expenses.each do |expense|
+    row = " #{expense["id"]} #{COLUMN}" +
+          " #{expense["created_on"]} #{COLUMN}" +
+          " #{expense["amount"].rjust(COLUMN_DATA_WIDTH)} #{COLUMN}" +
+          " #{expense["memo"]}"
+
+    puts row
+  end
+end
+
+def display_help
+  help = <<~HELP
+    An expense recording system
+
+    Commands:
+
+    add AMOUNT MEMO [DATE] - record a new expense
+    clear - delete all expenses
+    list - list all expenses
+    delete NUMBER - remove expense with id NUMBER
+    search QUERY - list expenses with a matching memo field
+  HELP
+
+  puts help
+end
+
 # Connect to the database and get an object representing that
 db = PG.connect(dbname: "expense")
 
-all_expenses = db.exec "SELECT * FROM expenses ORDER BY created_on ASC;"
-
-all_expenses.each do |expense|
-  row = " #{expense["id"]} #{COLUMN}" +
-        " #{expense["created_on"]} #{COLUMN}" +
-        " #{expense["amount"].rjust(COLUMN_DATA_WIDTH)} #{COLUMN}" +
-        " #{expense["memo"]}"
-
-  puts row
+case ARGV[0]
+when "list" then display_all_expenses(db)
+else display_help
 end
+
+# display_all_expenses(db)
