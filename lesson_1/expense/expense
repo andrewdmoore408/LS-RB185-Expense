@@ -10,16 +10,18 @@ def add_expense
   amount, memo = ARGV[1], ARGV[2]
   db = PG.connect(dbname: "expense")
 
-  db.exec "INSERT INTO #{TABLE_NAME} (amount, memo) \
-           VALUES \
-           (#{amount}, '#{memo}');"
+  insert_sql = "INSERT INTO expenses (amount, memo) \
+                VALUES \
+                ($1, $2);"
+
+  db.exec_params(insert_sql, [amount, memo])
 end
 
 def display_all_expenses
   # Connect to the database and get an object representing that
   db = PG.connect(dbname: "expense")
 
-  all_expenses = db.exec "SELECT * FROM #{TABLE_NAME} ORDER BY created_on ASC;"
+  all_expenses = db.exec_params "SELECT * FROM #{TABLE_NAME} ORDER BY created_on ASC;"
 
   all_expenses.each do |expense|
     row = " #{expense["id"]} #{COLUMN}" +
