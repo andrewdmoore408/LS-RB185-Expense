@@ -5,6 +5,10 @@ require "pg"
 COLUMN_DATA_WIDTH = 11
 COLUMN = "|"
 
+def add_expense
+
+end
+
 def display_all_expenses
   # Connect to the database and get an object representing that
   db = PG.connect(dbname: "expense")
@@ -37,8 +41,18 @@ def display_help
   puts help
 end
 
+def validate_add_arguments
+  unless ARGV.length == 3
+    puts "You must provide an amount and memo."
+    false
+  else
+    true
+  end
+end
+
 case ARGV.first
 when "list" then display_all_expenses
+when "add" then add_expense if validate_add_arguments
 else display_help
 end
 
