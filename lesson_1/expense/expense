@@ -19,17 +19,6 @@ class ExpenseData
     @db.exec_params(insert_sql, [amount, memo])
   end
 
-  def display_records(rows)
-    rows.each do |row|
-      columns = [ row["id"].rjust(3),
-                  row["created_on"].rjust(10),
-                  row["amount"].rjust(12),
-                  row["memo"] ]
-
-      puts columns.join("#{COLUMN_SEPARATOR}")
-    end
-  end
-
   def list_expenses
     all_expenses = @db.exec_params "SELECT * FROM #{TABLE_NAME} ORDER BY created_on ASC;"
 
@@ -44,6 +33,19 @@ class ExpenseData
     search_results = @db.exec_params(search_sql, ["%#{term}%"])
 
     display_records(search_results)
+  end
+
+  private
+
+  def display_records(rows)
+    rows.each do |row|
+      columns = [ row["id"].rjust(3),
+                  row["created_on"].rjust(10),
+                  row["amount"].rjust(12),
+                  row["memo"] ]
+
+      puts columns.join("#{COLUMN_SEPARATOR}")
+    end
   end
 end
 
