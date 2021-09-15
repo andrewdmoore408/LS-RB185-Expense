@@ -2,8 +2,7 @@
 class ExpenseData
   require "pg"
 
-  COLUMN_DATA_WIDTH = 11
-  COLUMN = "|"
+  COLUMN_SEPARATOR = " | "
   TABLE_NAME = "expenses"
 
   attr_reader :db
@@ -20,17 +19,31 @@ class ExpenseData
     @db.exec_params(insert_sql, [amount, memo])
   end
 
-  def display_all_expenses
+  def display_records(rows)
+    rows.each do |row|
+      columns = [ row["id"].rjust(3),
+                  row["created_on"].rjust(10),
+                  row["amount"].rjust(12),
+                  row["memo"] ]
+
+      puts columns.join("#{COLUMN_SEPARATOR}")
+    end
+  end
+
+  def list_expenses
     all_expenses = @db.exec_params "SELECT * FROM #{TABLE_NAME} ORDER BY created_on ASC;"
 
-    all_expenses.each do |expense|
-      row = " #{expense["id"]} #{COLUMN}" +
-            " #{expense["created_on"]} #{COLUMN}" +
-            " #{expense["amount"].rjust(COLUMN_DATA_WIDTH)} #{COLUMN}" +
-            " #{expense["memo"]}"
+    display_records(all_expenses)
+  end
 
-      puts row
-    end
+  def search_expenses(term)
+    search_sql = "SELECT * FROM #{TABLE_NAME} \
+                  WHERE memo ILIKE $1 \
+                  ORDER BY created_on ASC;"
+
+    search_results = @db.exec_params(search_sql, ["%#{term}%"])
+
+    display_records(search_results)
   end
 end
 
@@ -57,13 +70,19 @@ class CLI
 
   def run(args)
     case args.first
-    when "list" then @expenses.display_all_expenses
+    when "list" then @expenses.list_expenses
     when "add"
       amount, memo = ARGV[1], ARGV[2]
       @expenses.add_expense(amount, memo) if validate_add_arguments
-    when "search" then @expenses.search
+    when "search"
+      term = ARGV[1]
+      @expenses.search_expenses(term)
     else display_help
     end
+  end
+
+  def validate_search_arguments
+
   end
 
   def validate_add_arguments
