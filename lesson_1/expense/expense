@@ -12,9 +12,7 @@ class ExpenseData
     @db = PG.connect(dbname: "expense")
   end
 
-  def add_expense
-    amount, memo = ARGV[1], ARGV[2]
-
+  def add_expense(amount, memo)
     insert_sql = "INSERT INTO expenses (amount, memo) \
                   VALUES \
                   ($1, $2);"
@@ -37,7 +35,6 @@ class ExpenseData
 end
 
 class CLI
-
   def initialize
     @expenses = ExpenseData.new
   end
@@ -61,7 +58,10 @@ class CLI
   def run(args)
     case args.first
     when "list" then @expenses.display_all_expenses
-    when "add" then @expenses.add_expense if validate_add_arguments
+    when "add"
+      amount, memo = ARGV[1], ARGV[2]
+      @expenses.add_expense(amount, memo) if validate_add_arguments
+    when "search" then @expenses.search
     else display_help
     end
   end
