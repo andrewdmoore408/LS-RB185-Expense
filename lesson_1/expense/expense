@@ -75,22 +75,25 @@ class CLI
     when "list" then @expenses.list_expenses
     when "add"
       amount, memo = ARGV[1], ARGV[2]
-      @expenses.add_expense(amount, memo) if validate_add_arguments
+      @expenses.add_expense(amount, memo) if valid_add_arguments
     when "search"
       term = ARGV[1]
-      @expenses.search_expenses(term)
+      @expenses.search_expenses(term) if valid_search_arguments
     else display_help
     end
   end
 
-  def validate_search_arguments
-
+  def valid_search_arguments
+    unless ARGV.length == 2
+      abort "You must include one term to search"
+    else
+      true
+    end
   end
 
-  def validate_add_arguments
+  def valid_add_arguments
     unless ARGV.length == 3
-      puts "You must provide an amount and memo."
-      false
+      abort "You must provide an amount and memo."
     else
       true
     end
