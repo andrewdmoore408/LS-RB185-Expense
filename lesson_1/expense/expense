@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
-class ExpenseData
-  require "pg"
+require "io/console"
+require "pg"
 
+class ExpenseData
   COLUMN_SEPARATOR = " | "
   TABLE_NAME = "expenses"
 
@@ -17,6 +18,14 @@ class ExpenseData
                   ($1, $2);"
 
     @db.exec_params(insert_sql, [amount, memo])
+  end
+
+  def delete_all_expenses
+    delete_all_sql = "DELETE FROM #{TABLE_NAME};"
+
+    @db.exec_params(delete_all_sql)
+
+    puts "All expenses have been deleted."
   end
 
   def delete_expense(id)
@@ -92,6 +101,10 @@ class CLI
     when "add"
       amount, memo = ARGV[1], ARGV[2]
       @expenses.add_expense(amount, memo) if valid_add_arguments
+    when "clear"
+      if user_confirms_clear
+        @expenses.delete_all_expenses
+      end
     when "delete"
       id = ARGV[1]
       @expenses.delete_expense(id) if valid_delete_arguments
@@ -99,6 +112,18 @@ class CLI
       term = ARGV[1]
       @expenses.search_expenses(term) if valid_search_arguments
     else display_help
+    end
+  end
+
+  def user_confirms_clear
+    puts "This will remove all expenses. Are you sure? (y/n)"
+
+    clear_confirm = STDIN.getch
+
+    if clear_confirm.downcase == "y"
+      true
+    else
+      false
     end
   end
 
