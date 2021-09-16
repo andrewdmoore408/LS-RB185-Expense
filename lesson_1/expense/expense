@@ -12,11 +12,27 @@ class ExpenseData
   end
 
   def add_expense(amount, memo)
-    insert_sql = "INSERT INTO expenses (amount, memo) \
+    insert_sql = "INSERT INTO #{TABLE_NAME} (amount, memo) \
                   VALUES \
                   ($1, $2);"
 
     @db.exec_params(insert_sql, [amount, memo])
+  end
+
+  def delete_expense(id)
+    selected_to_delete_sql = "SELECT * FROM #{TABLE_NAME} \
+                              WHERE id = $1;"
+
+    to_delete = @db.exec_params(selected_to_delete_sql, [id])
+
+    if to_delete.values.length == 1
+      delete_sql = "DELETE FROM #{TABLE_NAME} WHERE id = $1"
+      @db.exec_params(delete_sql, [id])
+      puts "The following expense has been deleted:"
+      display_records(to_delete)
+    else
+      puts "There is no expense with the id '#{id}'"
+    end
   end
 
   def list_expenses
@@ -76,10 +92,22 @@ class CLI
     when "add"
       amount, memo = ARGV[1], ARGV[2]
       @expenses.add_expense(amount, memo) if valid_add_arguments
+    when "delete"
+      id = ARGV[1]
+      @expenses.delete_expense(id) if valid_delete_arguments
     when "search"
       term = ARGV[1]
       @expenses.search_expenses(term) if valid_search_arguments
     else display_help
+    end
+  end
+
+  def valid_delete_arguments
+    unless ARGV.length == 2 &&
+           ARGV[1] =~ /^[0-9]{1,}$/
+      abort "You must include exactly one id to delete"
+    else
+      true
     end
   end
 
