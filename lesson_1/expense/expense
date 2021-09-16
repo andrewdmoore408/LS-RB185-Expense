@@ -47,7 +47,7 @@ class ExpenseData
   def list_expenses
     all_expenses = @db.exec_params "SELECT * FROM #{TABLE_NAME} ORDER BY created_on ASC;"
 
-    display_records(all_expenses)
+    display_records_with_count_total(all_expenses)
   end
 
   def search_expenses(term)
@@ -57,7 +57,7 @@ class ExpenseData
 
     search_results = @db.exec_params(search_sql, ["%#{term}%"])
 
-    display_records(search_results)
+    display_records_with_count_total(search_results)
   end
 
   private
@@ -71,6 +71,20 @@ class ExpenseData
 
       puts columns.join("#{COLUMN_SEPARATOR}")
     end
+  end
+
+  def display_records_with_count_total(rows)
+    puts "There are #{rows.ntuples} expenses."
+
+    display_records(rows)
+
+    puts "-" * 50
+    puts "Total" + (" " * 22) + format('%.2f', total(rows))
+  end
+
+  def total(rows)
+    sum = rows.reduce(0) { |memo, row| memo += row["amount"].to_f }
+    sum
   end
 end
 
