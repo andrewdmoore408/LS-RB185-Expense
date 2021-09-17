@@ -10,6 +10,7 @@ class ExpenseData
 
   def initialize
     @db = PG.connect(dbname: "expense")
+    setup_schema
   end
 
   def add_expense(amount, memo)
@@ -80,6 +81,24 @@ class ExpenseData
 
     puts "-" * 50
     puts "Total" + (" " * 22) + format('%.2f', total(rows))
+  end
+
+  def setup_schema
+    table_count_sql = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'expenses';"
+
+    result = @db.exec table_count_sql
+    count = result.values.first.first.to_i
+
+    unless count == 1
+      create_table_sql = "CREATE TABLE #{TABLE_NAME}(       \
+                            id serial PRIMARY KEY,          \
+                            amount numeric(6, 2) NOT NULL,  \
+                            memo text NOT NULL,             \
+                            created_on date DEFAULT NOW()   \
+                          );"
+
+      @db.exec create_table_sql
+    end
   end
 
   def total(rows)
