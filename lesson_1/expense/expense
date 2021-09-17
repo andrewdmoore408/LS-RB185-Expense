@@ -90,11 +90,11 @@ class ExpenseData
     count = result.values.first.first.to_i
 
     unless count == 1
-      create_table_sql = "CREATE TABLE #{TABLE_NAME}(       \
-                            id serial PRIMARY KEY,          \
-                            amount numeric(6, 2) NOT NULL,  \
-                            memo text NOT NULL,             \
-                            created_on date DEFAULT NOW()   \
+      create_table_sql = "CREATE TABLE #{TABLE_NAME}(                          \
+                           id serial PRIMARY KEY,                              \
+                           amount numeric(6, 2) NOT NULL CHECK (amount > 0.00),\
+                           memo text NOT NULL,                                 \
+                           created_on date DEFAULT NOW()                       \
                           );"
 
       @db.exec create_table_sql
